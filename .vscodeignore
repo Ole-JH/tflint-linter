@@ -1,0 +1,10 @@
+.vscode/**
+src/**
+.gitignore
+tsconfig.json
+**/*.ts
+**/*.map
+!out/**
+node_modules/**
+images/*.svg
+Taskfile.yml

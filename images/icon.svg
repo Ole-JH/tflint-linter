@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Background rounded square -->
+  <rect width="128" height="128" rx="20" ry="20" fill="#5C4EE5"/>
+
+  <!-- "TF" text -->
+  <text x="64" y="58" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+        font-weight="800" font-size="46" text-anchor="middle" fill="#FFFFFF">TF</text>
+
+  <!-- Lint checkmark bar -->
+  <rect x="18" y="72" width="92" height="10" rx="5" fill="#ffffff" opacity="0.25"/>
+  <rect x="18" y="72" width="55" height="10" rx="5" fill="#A78BFA"/>
+
+  <!-- Squiggle underline (lint indicator) -->
+  <path d="M18 96 Q24 90 30 96 Q36 102 42 96 Q48 90 54 96 Q60 102 66 96 Q72 90 78 96 Q84 102 90 96 Q96 90 102 96 Q108 102 110 99"
+        stroke="#FBBF24" stroke-width="4" fill="none" stroke-linecap="round"/>
+</svg>

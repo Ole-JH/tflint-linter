@@ -1,0 +1,68 @@
+{
+  "name": "tflint-linter",
+  "displayName": "TFLint",
+  "description": "TFLint integration for Visual Studio Code",
+  "version": "0.1.0",
+  "publisher": "Ole-JH",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ole-JH/vscode-tflint"
+  },
+  "engines": { "vscode": "^1.75.0" },
+  "categories": ["Linters"],
+  "icon": "images/icon.png",
+  "activationEvents": [
+    "onLanguage:terraform",
+    "workspaceContains:**/*.tf"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "tflint.disableRule",
+        "title": "Disable tflint rule"
+      }
+    ],
+    "configuration": {
+      "title": "TFLint",
+      "properties": {
+        "tflint.executablePath": {
+          "type": "string",
+          "default": "tflint",
+          "description": "Path to the tflint executable."
+        },
+        "tflint.runOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run tflint automatically on file save."
+        },
+        "tflint.runOnOpen": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run tflint automatically when a file is opened."
+        },
+        "tflint.chdir": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run tflint with --chdir set to the workspace folder containing the file (lints the whole module)."
+        },
+        "tflint.excludeRules": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "List of tflint rule names to disable (passed as --disable-rule=<name>)."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.75.0",
+    "typescript": "^5.0.0"
+  }
+}

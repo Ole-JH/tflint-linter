@@ -1,0 +1,76 @@
+version: '3'
+
+tasks:
+  default:
+    desc: List all available tasks
+    cmds:
+      - task --list
+
+  install-deps:
+    desc: Install npm dependencies
+    cmds:
+      - npm install
+    sources:
+      - package.json
+    generates:
+      - node_modules/.package-lock.json
+
+  compile:
+    desc: Compile TypeScript
+    deps: [install-deps]
+    cmds:
+      - npm run compile
+    sources:
+      - src/**/*.ts
+      - tsconfig.json
+    generates:
+      - out/**/*.js
+
+  watch:
+    desc: Watch and recompile on changes
+    deps: [install-deps]
+    cmds:
+      - npm run watch
+
+  package:
+    desc: Package the extension as a .vsix file
+    deps: [compile]
+    cmds:
+      - vsce package
+    generates:
+      - "*.vsix"
+
+  install:
+    desc: Install the extension into VS Code
+    deps: [package]
+    cmds:
+      - code --install-extension $(ls -t *.vsix | head -1)
+
+  publish:
+    desc: Publish the extension to the VS Code Marketplace
+    deps: [compile]
+    cmds:
+      - vsce publish
+
+  publish-ovsx:
+    desc: Publish the extension to Open VSX Registry
+    deps: [compile]
+    cmds:
+      - ovsx publish $(ls -t *.vsix | head -1) -p {{.OVSX_TOKEN}}
+    requires:
+      vars: [OVSX_TOKEN]
+
+  clean:
+    desc: Remove compiled output and packaged .vsix files
+    cmds:
+      - rm -rf out/
+      - rm -f *.vsix
+
+  lint-icon:
+    desc: Convert SVG icon to PNG (requires librsvg2-bin)
+    cmds:
+      - rsvg-convert -w 128 -h 128 images/icon.svg -o images/icon.png
+    sources:
+      - images/icon.svg
+    generates:
+      - images/icon.png
