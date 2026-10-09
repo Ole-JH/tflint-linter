@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as cp from 'child_process';
+import * as fs from 'fs';
 import * as path from 'path';
 
 interface TflintRange {
@@ -56,11 +57,11 @@ export function activate(context: vscode.ExtensionContext): void {
     })
   );
 
-  const cfg = () => vscode.workspace.getConfiguration('tflint');
+  const cfg = (doc: vscode.TextDocument) => vscode.workspace.getConfiguration('tflint', doc.uri);
 
   context.subscriptions.push(
     vscode.workspace.onDidOpenTextDocument(doc => {
-      if (cfg().get<boolean>('runOnOpen') && isTerraformDoc(doc)) {
+      if (cfg(doc).get<boolean>('runOnOpen') && isTerraformDoc(doc)) {
         runTflint(doc, diagnosticCollection);
       }
     })
@@ -68,7 +69,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument(doc => {
-      if (cfg().get<boolean>('runOnSave') && isTerraformDoc(doc)) {
+      if (cfg(doc).get<boolean>('runOnSave') && isTerraformDoc(doc)) {
         runTflint(doc, diagnosticCollection);
       }
     })
@@ -137,14 +138,53 @@ function buildEnv(): NodeJS.ProcessEnv {
   };
 }
 
+function resolveConfigFile(doc: vscode.TextDocument, configuredPath: string): string | undefined {
+  const moduleDir = path.dirname(doc.uri.fsPath);
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(doc.uri);
+  const workspaceRoot = workspaceFolder?.uri.fsPath;
+
+  if (configuredPath) {
+    return path.isAbsolute(configuredPath)
+      ? configuredPath
+      : path.resolve(workspaceRoot ?? moduleDir, configuredPath);
+  }
+
+  if (!workspaceRoot) {
+    return undefined;
+  }
+
+  const relativeModulePath = path.relative(workspaceRoot, moduleDir);
+  if (relativeModulePath.startsWith('..') || path.isAbsolute(relativeModulePath)) {
+    return undefined;
+  }
+
+  let currentDir = moduleDir;
+  while (true) {
+    const candidate = path.join(currentDir, '.tflint.hcl');
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+    if (currentDir === workspaceRoot) {
+      return undefined;
+    }
+
+    const parentDir = path.dirname(currentDir);
+    if (parentDir === currentDir) {
+      return undefined;
+    }
+    currentDir = parentDir;
+  }
+}
+
 function runTflint(
   doc: vscode.TextDocument,
   collection: vscode.DiagnosticCollection
 ): void {
-  const config = vscode.workspace.getConfiguration('tflint');
+  const config = vscode.workspace.getConfiguration('tflint', doc.uri);
   const executable = config.get<string>('executablePath', 'tflint');
   const useChdir = config.get<boolean>('chdir', true);
   const excludeRules = config.get<string[]>('excludeRules', []);
+  const configFile = resolveConfigFile(doc, config.get<string>('configFile', '').trim());
 
   // tflint lints one module (directory) at a time — use the file's directory, not the workspace root
   const spawnCwd = path.dirname(doc.uri.fsPath);
@@ -153,8 +193,9 @@ function runTflint(
     ? ['--format=json', `--chdir=${spawnCwd}`]
     : ['--format=json', doc.uri.fsPath];
 
+  const configArgs = configFile ? [`--config=${configFile}`] : [];
   const disableArgs = excludeRules.map(rule => `--disable-rule=${rule}`);
-  const args = [...baseArgs, ...disableArgs];
+  const args = [...baseArgs, ...configArgs, ...disableArgs];
 
   outputChannel.appendLine(`\n[tflint] Running: ${executable} ${args.join(' ')}`);
   outputChannel.appendLine(`[tflint] spawn cwd: ${spawnCwd}`);

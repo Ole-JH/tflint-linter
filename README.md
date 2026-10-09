@@ -52,6 +52,7 @@ All settings are under the `tflint` namespace and can be set in your workspace o
 | `tflint.runOnSave` | `boolean` | `true` | Run tflint every time a `.tf` file is saved. |
 | `tflint.runOnOpen` | `boolean` | `true` | Run tflint when a `.tf` file is opened. |
 | `tflint.chdir` | `boolean` | `true` | Lint the file's directory instead of a single file. Recommended — tflint is module-aware. |
+| `tflint.configFile` | `string` | `""` | TFLint configuration file. Relative paths resolve from the workspace folder. When empty, the nearest ancestor `.tflint.hcl` within the workspace is used. |
 | `tflint.excludeRules` | `string[]` | `[]` | Rule names to disable, passed as `--disable-rule=<name>`. |
 
 ### Examples
@@ -68,6 +69,11 @@ All settings are under the `tflint` namespace and can be set in your workspace o
   "terraform_required_providers",
   "terraform_typed_variables"
 ]
+```
+
+**Use a specific configuration file:**
+```json
+"tflint.configFile": ".tflint.hcl"
 ```
 
 **Lint only on save (not on open):**
@@ -103,9 +109,10 @@ This is expected — tflint reports issues for all files in the module, but VS C
 When you open or save a `.tf` file, the extension:
 
 1. Resolves the file's directory as the module root
-2. Runs `tflint --format=json --chdir=<module-dir>`
-3. Parses the JSON output and maps each issue to its file, line, and column
-4. Writes the results to VS Code's diagnostics API
+2. Finds the nearest `.tflint.hcl` between the module and workspace root, unless `tflint.configFile` is set
+3. Runs `tflint --format=json --chdir=<module-dir> [--config=<config-file>]`
+4. Parses the JSON output and maps each issue to its file, line, and column
+5. Writes the results to VS Code's diagnostics API
 
 tflint is always run against the **whole module directory** (not a single file) because many rules — such as `terraform_required_providers` — require cross-file analysis.
 

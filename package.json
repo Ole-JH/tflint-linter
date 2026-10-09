@@ -29,27 +29,39 @@
         "tflint.executablePath": {
           "type": "string",
           "default": "tflint",
+          "scope": "resource",
           "description": "Path to the tflint executable."
         },
         "tflint.runOnSave": {
           "type": "boolean",
           "default": true,
+          "scope": "resource",
           "description": "Run tflint automatically on file save."
         },
         "tflint.runOnOpen": {
           "type": "boolean",
           "default": true,
+          "scope": "resource",
           "description": "Run tflint automatically when a file is opened."
         },
         "tflint.chdir": {
           "type": "boolean",
           "default": true,
-          "description": "Run tflint with --chdir set to the workspace folder containing the file (lints the whole module)."
+          "scope": "resource",
+          "description": "Run tflint with --chdir set to the directory containing the file (lints the whole module)."
+        },
+        "tflint.configFile": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "restricted": true,
+          "description": "Path to the TFLint configuration file. Relative paths resolve from the containing workspace folder. When empty, the nearest ancestor .tflint.hcl within the workspace is used."
         },
         "tflint.excludeRules": {
           "type": "array",
           "items": { "type": "string" },
           "default": [],
+          "scope": "resource",
           "description": "List of tflint rule names to disable (passed as --disable-rule=<name>)."
         }
       }
