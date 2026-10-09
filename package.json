@@ -2,11 +2,11 @@
   "name": "tflint-linter",
   "displayName": "TFLint",
   "description": "TFLint integration for Visual Studio Code",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "Ole-JH",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Ole-JH/vscode-tflint"
+    "url": "https://github.com/Ole-JH/tflint-linter"
   },
   "engines": { "vscode": "^1.75.0" },
   "categories": ["Linters"],
@@ -56,6 +56,16 @@
           "scope": "resource",
           "restricted": true,
           "description": "Path to the TFLint configuration file. Relative paths resolve from the containing workspace folder. When empty, the nearest ancestor .tflint.hcl within the workspace is used."
+        },
+        "tflint.runOnType": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run tflint as you type (debounced). Requires tflint to be fast in your setup."
+        },
+        "tflint.typeDebounceMs": {
+          "type": "number",
+          "default": 750,
+          "description": "Milliseconds to wait after the last keystroke before running tflint (used when tflint.runOnType is enabled)."
         },
         "tflint.excludeRules": {
           "type": "array",

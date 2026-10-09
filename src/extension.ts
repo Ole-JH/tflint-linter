@@ -28,6 +28,7 @@ interface TflintOutput {
 
 let installWarningShown = false;
 let outputChannel: vscode.OutputChannel;
+const debounceTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 // Common locations where tflint may be installed
 const EXTRA_PATH_DIRS = [
@@ -76,7 +77,30 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
+    vscode.workspace.onDidChangeTextDocument(event => {
+      const doc = event.document;
+      if (!cfg().get<boolean>('runOnType') || !isTerraformDoc(doc)) { return; }
+
+      const key = doc.uri.toString();
+      const existing = debounceTimers.get(key);
+      if (existing !== undefined) { clearTimeout(existing); }
+
+      const delay = cfg().get<number>('typeDebounceMs', 750);
+      debounceTimers.set(key, setTimeout(() => {
+        debounceTimers.delete(key);
+        runTflint(doc, diagnosticCollection);
+      }, delay));
+    })
+  );
+
+  context.subscriptions.push(
     vscode.workspace.onDidCloseTextDocument(doc => {
+      const key = doc.uri.toString();
+      const existing = debounceTimers.get(key);
+      if (existing !== undefined) {
+        clearTimeout(existing);
+        debounceTimers.delete(key);
+      }
       diagnosticCollection.delete(doc.uri);
     })
   );
