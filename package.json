@@ -2,7 +2,7 @@
   "name": "tflint-linter",
   "displayName": "TFLint",
   "description": "TFLint integration for Visual Studio Code",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "Ole-JH",
   "repository": {
     "type": "git",
